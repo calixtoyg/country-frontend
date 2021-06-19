@@ -49,10 +49,6 @@ const SignIn = (props) => {
         }
     };
 
-    function handleClose() {
-
-    }
-
     return (
         <div>
             <Grid
