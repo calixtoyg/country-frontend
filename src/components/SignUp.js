@@ -30,7 +30,7 @@ function passwordChange() {
 const SignUp = (props) => {
     let history = useHistory();
     const classes = useStyles();
-    const {setType, setOpen, setMessage} = useContext(AlertMessageContext)
+    const {setType, setAlertOpen, setMessage} = useContext(AlertMessageContext)
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -46,13 +46,13 @@ const SignUp = (props) => {
             })
                 .then(v => {
                     setType("success")
-                    setOpen(true)
+                    setAlertOpen(true)
                     setMessage("User was created successfully")
                     history.push('/login');
                 })
                 .catch(e => {
                     setType("error")
-                    setOpen(true)
+                    setAlertOpen(true)
                     setMessage(`There was an error while creating the user: ${e.message}`)
                 })
         }

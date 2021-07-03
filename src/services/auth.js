@@ -36,10 +36,14 @@ export const authLogin = async (credentials) => {
             },
             body: JSON.stringify(credentials)
         })
+        if (response.status !== 200)
+            throw new Error('Either password or email are wrong')
+
         const responseJson = await response.json();
         localStorage.setItem('token', responseJson.token)
     } catch (e) {
         console.log(e)
+        throw e;
     }
 }
 export const authLogout = async () => {

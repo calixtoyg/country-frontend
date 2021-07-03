@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 const SignIn = (props) => {
     let history = useHistory();
     const classes = useStyles();
-    const {setType, setOpen, setMessage} = useContext(AlertMessageContext)
+    const {setType, setAlertOpen, setMessage} = useContext(AlertMessageContext)
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -37,13 +37,13 @@ const SignIn = (props) => {
             })
                 .then(v => {
                     setType("success")
-                    setOpen(true)
+                    setAlertOpen(true)
                     setMessage("Logged in successfully")
                     history.push('/country');
                 })
                 .catch(e => {
                     setType("error")
-                    setOpen(true)
+                    setAlertOpen(true)
                     setMessage(`There was an error while logging in: ${e.message}`)
                 })
         }

@@ -11,11 +11,11 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 export default function AlertMessage() {
-    const {open, type, message, setOpen} = useContext(AlertMessageContext)
+    const {alertOpen, type, message, setAlertOpen} = useContext(AlertMessageContext)
 
 
     const handleClick = () => {
-        setOpen(true);
+        setAlertOpen(true);
     };
 
     const handleClose = (event, reason) => {
@@ -23,11 +23,11 @@ export default function AlertMessage() {
             return;
         }
 
-        setOpen(false);
+        setAlertOpen(false);
     };
 
     return (
-        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleClose}>
             <Alert onClose={handleClose} severity={type} sx={{width: '100%'}}>
                 {message}
             </Alert>
