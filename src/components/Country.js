@@ -1,14 +1,13 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {DataGrid} from '@material-ui/data-grid';
-import {Button, Grid} from "@material-ui/core";
+import {Button, Grid, Input, InputAdornment, InputLabel} from "@material-ui/core";
 import ConfirmDialog from "./ConfirmDialog";
 import {AlertMessageContext} from "./AlertContext";
 import CountryDialog from "./CountryDialog";
-
-const getCountriesQuery = {
-    "query": "{\r\n    countries {id\r\n        name,\r\n        currencies {\r\n            code,\r\n            name,\r\n            symbol\r\n        },\r\n        population\r\n    }\r\n}",
-    "variables": {}
-};
+import {GreenButton} from "./GreenButton";
+import SEKPriceConverterDialog from "./SEKPriceConverterDialog";
+import {deleteCountryQuery, editCountryQuery, getCountriesQuery, getCountriesQueryByName, saveCountryQuery} from "../services/queries";
+import {Search} from "@material-ui/icons";
 
 
 const COUNTRY_API_GRAPHQL_URL = process.env.COUNTRY_API_GRAPHQL_URL || 'http://localhost:8080/graphql';
@@ -19,7 +18,9 @@ const Country = () => {
     const [open, setOpen] = useState(false);
     const [countryId, setCountryId] = useState('');
     const [country, setCountry] = useState(undefined);
-    const [countryDialog, setCountryDialog] = useState(false);
+    const [saveCountryDialog, setSaveCountryDialog] = useState(false);
+    const [editCountryDialog, setEditCountryDialog] = useState(false);
+    const [converterDialog, setConverterDialog] = useState(false);
     const columns = [
         {
             field: "name",
@@ -40,7 +41,7 @@ const Country = () => {
         {
             field: '',
             headerName: 'Actions',
-            width: 300,
+            width: 320,
             renderCell: getButtons
         }
     ]
@@ -65,6 +66,9 @@ const Country = () => {
                 <Grid item={3}>
                     <Button color="primary" variant="contained" onClick={() => editCountryHandler(arg)}>Edit</Button>
                 </Grid>
+                <Grid item={3}>
+                    <GreenButton onClick={() => convertToSekHandler(arg)}>Convert to SEK</GreenButton>
+                </Grid>
             </Grid>
         )
     }
@@ -81,10 +85,15 @@ const Country = () => {
                 },
                 body: JSON.stringify(deleteCountryQuery(countryId))
             })).json();
+            if (response.errors) {
+                setType("error")
+                setMessage(`Countries could not be deleted: ` + response.errors[0].message)
+                setAlertOpen(true)
+            }
+            await getCountries()
             setType("success")
             setMessage(`Country was deleted successfully`)
             setAlertOpen(true)
-            await getCountries()
         } catch (e) {
             setType("error")
             setMessage(`Country was not deleted an error occurred: ` + e.message)
@@ -103,7 +112,34 @@ const Country = () => {
                 },
                 body: JSON.stringify(editCountryQuery(country))
             })).json();
-            setCountryDialog(false)
+            setEditCountryDialog(false)
+            if (response.errors) {
+                throw new Error('There was an error during edition')
+            }
+            setType("success")
+            setMessage(`Country was edited successfully`)
+            setAlertOpen(true)
+            await getCountries()
+        } catch (e) {
+            setType("error")
+            setMessage(`Country was not deleted an error occurred: ` + e.message)
+            setAlertOpen(true)
+        }
+    }
+
+
+    async function saveCountry(country) {
+        try {
+            let response = await (await fetch(COUNTRY_API_GRAPHQL_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(saveCountryQuery(country))
+            })).json();
+            setSaveCountryDialog(false)
             if (response.errors) {
                 throw new Error('There was an error during edition')
             }
@@ -132,27 +168,7 @@ const Country = () => {
     }
 
 
-    const deleteCountryQuery = (id) => ({
-        query: `mutation {\r
-            deleteCountry(id:  "${id}"){\r
-              name\r
-            }\r
-     }\r`, "variables": {}
-    })
 
-    const editCountryQuery = (country) => ({
-        "query": `mutation { 
-            editCountry(\r
-             id: "${country.id}",\r
-             name: "${country.name}", \r
-             currencies: ${JSON.stringify(country.currencies).replace(/"([^"]+)":/g, '$1:')},\r  
-             population: ${Number(country.population)}\r
-            ){\r
-               name\r
-             }\r
-        }\r`,
-        "variables": {}
-    })
 
     function handleConfirmDialog(shouldClose) {
         setConfirmDialog(shouldClose)
@@ -170,24 +186,78 @@ const Country = () => {
 
     function editCountryHandler(args) {
         setCountry({...args.row});
-        setCountryDialog(true);
+        setEditCountryDialog(true);
     }
    function handleCountryDialogClose(args) {
-        setCountryDialog(false);
+        setEditCountryDialog(false);
+        setSaveCountryDialog(false)
+    }
+
+    function handleSEKConverterDialogClose(args) {
+        setConverterDialog(false)
+    }
+
+    function convertToSekHandler(args) {
+        setCountry({...args.row})
+        setConverterDialog(true)
+    }
+
+    async function handleSearch(value) {
+        let response = await (await fetch(COUNTRY_API_GRAPHQL_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(getCountriesQueryByName(value))
+        })).json();
+        if (response.errors) {
+            setType("error")
+            setMessage(`Countries could not be fetched reason: ` + response.errors[0].message)
+            setAlertOpen(true)
+            setCountries([])
+        } else {
+            setCountries(response.data.countries);
+        }
     }
 
     return (
         <div>
-            <CountryDialog open={countryDialog} country={country} edit={editCountry} onClose={handleCountryDialogClose}/>
+            <CountryDialog open={editCountryDialog} country={country} handleClosing={editCountry} onClose={handleCountryDialogClose}/>
+            <CountryDialog open={saveCountryDialog} handleClosing={saveCountry} isSave={true} onClose={handleCountryDialogClose}/>
             <ConfirmDialog action={"delete"} open={open} handleClose={handleConfirmDialog}/>
-            <div style={{height: 600, width: '100%'}}>
-                <DataGrid
-                    rows={countries}
-                    columns={columns}
-                    pageSize={15}
-                    disableSelectionOnClick
-                />
-            </div>
+            <SEKPriceConverterDialog open={converterDialog} country={country} handleClose={handleSEKConverterDialogClose}/>
+            <Grid container spacing={1}>
+                <Grid item xs={3}>
+                    <InputLabel htmlFor="search">Search by name</InputLabel>
+                    <Input
+                        id="search"
+                        fullWidth
+                        onChange={(e) => handleSearch(e.target.value)}
+                        startAdornment={
+                            <InputAdornment position="start">
+                                <Search />
+                            </InputAdornment>
+                        }
+                    />
+                </Grid>
+                <Grid item xs={3}>
+                    <GreenButton onClick={() => setSaveCountryDialog(true)}>Add country</GreenButton>
+                </Grid>
+                <Grid item xs={12} >
+                    <div style={{height: 600, width: '100%'}}>
+                        <DataGrid
+                            rows={countries}
+                            columns={columns}
+                            pageSize={15}
+                            disableSelectionOnClick
+                        />
+                    </div>
+                </Grid>
+
+            </Grid>
+
         </div>
     );
 };

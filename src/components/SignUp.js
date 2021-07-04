@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {Button, FormControl, Grid, Input, InputLabel, makeStyles, Paper, TextField} from "@material-ui/core";
+import {Button, Grid, makeStyles, Paper, TextField} from "@material-ui/core";
 import { useHistory } from 'react-router-dom'
 
 import {authSignUp} from "../services/auth";
@@ -22,10 +22,6 @@ const useStyles = makeStyles(theme => ({
         },
     },
 }));
-
-function passwordChange() {
-
-}
 
 const SignUp = (props) => {
     let history = useHistory();

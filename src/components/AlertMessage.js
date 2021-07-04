@@ -2,7 +2,7 @@ import * as React from 'react';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import PropTypes from "prop-types";
-import {useContext, useState} from "react";
+import {useContext} from "react";
 import {AlertMessageContext} from "./AlertContext";
 
 
@@ -12,11 +12,6 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 
 export default function AlertMessage() {
     const {alertOpen, type, message, setAlertOpen} = useContext(AlertMessageContext)
-
-
-    const handleClick = () => {
-        setAlertOpen(true);
-    };
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -38,5 +33,5 @@ export default function AlertMessage() {
 
 AlertMessage.propTypes = {
     open: PropTypes.bool,
-    type: "error" || "warning" || "info" || "success"
+    type: PropTypes.oneOf(["error","warning","info","success"])
 }
