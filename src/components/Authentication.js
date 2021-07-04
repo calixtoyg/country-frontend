@@ -19,12 +19,7 @@ export default function Auth({ children }) {
         .then(() => setIsLoading(false))
 
     const login = credentials => authLogin(credentials)
-        .then(() => setIsAuthenticated(true))
-        .catch(error => {
-            alert(error)
-            setIsAuthenticated(false)
-        })
-
+        .then(() => setIsAuthenticated(true));
     const logout = () => {
         authLogout()
         setIsAuthenticated(false)

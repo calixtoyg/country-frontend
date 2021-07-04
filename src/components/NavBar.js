@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {
-    AppBar,
+    AppBar, Button, Grid, Icon,
     IconButton,
     makeStyles,
     Menu,
@@ -14,6 +14,8 @@ import MenuIcon from "@material-ui/icons/Menu";
 
 import {useHistory} from "react-router-dom";
 import {AuthContext} from "./Authentication";
+import {authLogout} from "../services/auth";
+import {ExitToApp} from "@material-ui/icons";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -31,11 +33,19 @@ const useStyles = makeStyles(theme => ({
         display: "flex",
         flex: 1,
         justifyContent: "flex-start"
-    }
+    },
+    rightOptions: {
+        display: "flex",
+        flex: 1,
+        justifyContent: "flex-end"
+    },
+    button: {
+        margin: theme.spacing(1),
+    },
 }));
 
 function NavBar() {
-    const { isAuthenticated, isLoading } = useContext(AuthContext)
+    const { isAuthenticated, isLoading, logout } = useContext(AuthContext)
 
     let history = useHistory();
     const classes = useStyles();
@@ -69,6 +79,12 @@ function NavBar() {
     const handleButtonClick = pageURL => {
         history.push(pageURL);
     };
+
+    function handleLogout() {
+        logout()
+        history.push('/login')
+    }
+
     return (
         <div className={classes.root}>
             <AppBar position="static">
@@ -113,15 +129,33 @@ function NavBar() {
                             </Menu>
                         </>
                     ) : (
-                        <div className={classes.headerOptions}>
-                            <IconButton
-                                color="inherit"
-                                aria-label="menu"
-                                onClick={() => handleButtonClick("/country")}
-                            >
-                                Country list
-                            </IconButton>
-                        </div>
+                        <Grid container
+                              direction="row"
+                              justify="space-between"
+                              alignItems="center"
+                              spacing={1}>
+                            <Grid item xs={11}>
+                                <IconButton
+                                    color="inherit"
+                                    aria-label="menu"
+                                    onClick={() => handleButtonClick("/country")}
+                                >
+                                    Country list
+                                </IconButton>
+                            </Grid>
+                            <Grid item xs={1}>
+                                {
+                                    isAuthenticated ?
+                                        <Button className={classes.button} onClick={() => handleLogout()} startIcon={<ExitToApp/>}>Logout</Button> :
+                                        <div>
+                                            <Button onClick={() => handleButtonClick("/login")}>Login</Button>
+                                            <Button onClick={() => handleButtonClick("/signup")}>Sing up</Button>
+                                        </div>
+                                }
+                            </Grid>
+
+                        </Grid>
+
                     )}
                 </Toolbar>
             </AppBar>

@@ -31,7 +31,7 @@ function App() {
                                 <Route path='/signup'>
                                     <SignUp/>
                                 </Route>
-                                <PrivateRoute path={'/country'} component={Country}/>
+                                <PrivateRoute path={['/country', "/"]} component={Country}/>
 
                             </Switch>
                         </Container>
