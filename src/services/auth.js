@@ -1,12 +1,11 @@
 import jwt from 'jsonwebtoken'
-import {useContext} from "react";
-import {AuthContext} from "../components/Authentication";
 
 const URL = process.env.COUNTRY_API_URL || 'http://localhost:8080';
 
 export const checkIsAuthenticated = async () => {
     const token = localStorage.getItem('token')
-    return !(token && jwt.decode(token).exp <= Date.now());
+    const now = new Date()
+    return !(token && new Date(new Date().setUTCMilliseconds(jwt.decode(token).exp)) <= now);
 }
 
 export const authSignUp = async (credentials) => {

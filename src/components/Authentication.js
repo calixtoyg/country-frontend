@@ -14,7 +14,7 @@ export default function Auth({ children }) {
     }, [])
 
     const checkAuth = () => checkIsAuthenticated()
-        .then(() => setIsAuthenticated(true))
+        .then((v) => setIsAuthenticated(v))
         .catch(() => setIsAuthenticated(false))
         .then(() => setIsLoading(false))
 
